@@ -1,0 +1,47 @@
+;~~~~~~~~~~~~~ INI INSTRUCTIONS ~~~~~~~~~~~~~;
+
+Each "GameName".ini needs to consist of 2 sections at the very least.
+
+[GameInfo] Where you define the hotkeys and other game specific settings and,
+[wepN] Where you define the the weapon specific attributes.
+
+;~~~~~~~~~~ [GameInfo] explanation ~~~~~~~~~~;
+
+[GameInfo]
+ahkClass=	The ahk_class of your game window, you can get this with e.g. "AutoIT3 Window Spy" that comes with most fresh installations of AHK
+clickMode=	The method of sending clicks, options are either native AHK Click ("click") or a dllcall ("dll").
+toggleKey=	The key that toggles whether the rapidfire/no-recoil is active, use AHK's hotkey syntax here (http://www.autohotkey.com/docs/Hotkeys.htm)
+fireKey=	The key used for activating the rapidfire/no-recoil, use AHK's hotkey syntax here 
+wepKey1=	The key in-game that is used to activate weapon slot 1, use AHK's hotkey syntax here 
+wepKey2=	The key in-game that is used to activate weapon slot 2, use AHK's hotkey syntax here 
+wepKey3=	The key in-game that is used to activate weapon slot 3, use AHK's hotkey syntax here 
+
+;~~~~~~~~~~~ [wepN] explanation ~~~~~~~~~~~~~;
+
+[wepN] 		Where "N" is the position of the current weapon section. e.g. wep1, wep2... wepN
+name=		The name of the weapon displayed in the gui
+ammo=		Currently redundant value, you can leave this at 0
+rof=		Rate of fire (rof), the rate of fire in milliseconds
+rory=		Rate of recoil on Y-axis (rory), the rate of mouse correction per shot fired on Y-axis
+rorx=		Rate of recoil on X-axis (rorx), the rate of mouse correction per shot fired on X-axis
+rfType=		Rapid fire type (rfType), this can be "off" for single shot, "auto" for full automatic fire or "burst" for burst fire
+bC=		Burst Count (bC), if "rfType" is "burst" then this defines how many shots a single burst will fire
+
+;~~~~~~~~~~ "GameName.ini" sample ~~~~~~~~~~~;
+
+[GameInfo]
+ahkClass=HnGWindow000
+clickMode=click
+fireKey=*$LButton
+wepKey1=1
+wepKey2=2
+wepKey3=3
+
+[wep1]
+name=C96 Mauser
+ammo=10 
+rof=0
+rory=0.0
+rorx=0.0
+rfType=auto
+bC=0
