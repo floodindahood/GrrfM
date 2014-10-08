@@ -1,0 +1,452 @@
+SetBatchLines,-1
+SetKeyDelay,-1,-1
+FirstRun()
+Global active := array()
+Gui, Add, Text, x12 y10 w40 h20 , Game:
+Gui, Add, DropDownList, x52 y7 w320 h500 vcG gGame, % gL := GetGameList()
+Gui, Add, GroupBox, x12 y30 w270 h110 ,
+Gui, Add, Text, x22 y50 w60 h20 , Weapon 1:
+Gui, Add, Text, x22 y80 w60 h20 , Weapon 2:
+Gui, Add, Text, x22 y110 w60 h20 , Weapon 3:
+Gui, Add, DropDownList, x82 y47 w190 h500 vwep1 gWep, Select a game first...
+Gui, Add, DropDownList, x82 y77 w190 h500 vwep2 gWep, Select a game first...
+Gui, Add, DropDownList, x82 y107 w190 h500 vwep3 gWep, Select a game first...
+Gui, Add, GroupBox, x282 y30 w90 h110 , Rapid fire
+Gui, Add, CheckBox, x292 y50 w70 h15 vtrf1 gToggleRF, Weapon 1
+Gui, Add, CheckBox, x292 y80 w70 h15 vtrf2 gToggleRF, Weapon 2
+Gui, Add, CheckBox, x292 y110 w70 h15 vtrf3 gToggleRF, Weapon 3
+Gui, Add, Button, x382 y10 w40 h126 gStart, Start
+Gui, Show, w436 h150, GrrfM - Generic recoil & rapid fire Manager
+Gui 2: Add, Text, x12 y30 w80 h20 , Rate of fire:
+Gui 2: Add, Text, x12 y10 w50 h20 , Ammo
+Gui 2: Add, Text, x12 y50 w80 h20 , Rate of recoil`, Y:
+Gui 2: Add, Text, x12 y70 w90 h20 , Rate of recoil`, X:
+Gui 2: Add, Text, x12 y90 w90 h20 , Rapid fire`, type:
+Gui 2: Add, Text, x12 y110 w90 h20 , Burst fire`, count:
+Gui 2: Add, Edit, x102 y10 w40 h20 ves1, 0
+Gui 2: Add, Edit, x102 y30 w40 h20 ves2, 0
+Gui 2: Add, Edit, x102 y50 w40 h20 ves3, 0
+Gui 2: Add, Edit, x102 y70 w40 h20 ves4, 0
+Gui 2: Add, Edit, x102 y90 w40 h20 ves5, Off
+Gui 2: Add, Edit, x102 y110 w40 h20 ves6, 0
+Gui 2: +AlwaysOnTop -Border +Owner
+Gui 2: Show, % "x" A_ScreenWidth-155 " w155 h140", Customize
+Gui 2: Hide
+return
+
+Start:
+iniread,cType, % "Data\" cG ".ini",GameInfo,cType
+iniread,toggleKey, % "Data\" cG ".ini",GameInfo,toggleKey
+iniread,fireKey, % "Data\" cG ".ini",GameInfo,fireKey
+iniread,wepKey1, % "Data\" cG ".ini",GameInfo,wepKey1
+iniread,wepKey2, % "Data\" cG ".ini",GameInfo,wepKey2
+iniread,wepKey3, % "Data\" cG ".ini",GameInfo,wepKey3
+Hotkey,%toggleKey%,toggleScript
+Hotkey,%fireKey%,Shoot
+Hotkey, % fireKey " Up",ShootUp
+Hotkey,%wepKey1%,Swap1
+Hotkey,%wepKey2%,Swap2
+Hotkey,%wepKey3%,Swap3
+WinActivate,% "ahk_class " aC
+aWep := 1
+return
+
+Game:
+gui,submit,nohide
+if (instr(gL,cG)) {
+	wC := WepCount(cG)
+	MsgBox supsupsup
+	iniread,cM, % "Data\" cG ".ini",GameInfo,clickMode
+	iniread,aC, % "Data\" cG ".ini",GameInfo,ahkClass
+	loop, 3
+		guicontrol,, % "wep" A_Index, % GetWeaponList(cG,wC)
+}
+return
+
+Wep:
+gui,submit,nohide
+GetWeaponInfo(cG,GetWeaponNum(cG,%A_GuiControl%,wC),wC,lTrim(A_GuiControl,"wep"))
+return
+
+ToggleRF:
+gui,submit,nohide
+guicontrol, % ((%A_GuiControl%) ? "-disabled" : "+disabled"), % lTrim(A_GuiControl,"t")
+return
+
+toggleScript:
+toggle:=!toggle
+return
+
+#if (WinActive("ahk_class " aC))
+	Shoot:
+	if (toggle) {
+		pS := 60/active[aWep "_rof"]*1000
+		cY := 0, cX := 0, key := (toggle) ? 1 : 0
+		rF := "trf" aWep
+		if ((!%rF% && key) || (active[aWep "_rfType"] == "off" && key)) {
+			VarClick(cM)
+			cY += active[aWep "_rory"], cX += active[aWep "_rorx"]
+			sleep, % pS
+			DllCall("mouse_event", "UInt", 0x01, "UInt", cX, "UInt", cY)
+		}
+		else {
+			while ((key && active[aWep "_rfType"] == "burst" && active[aWep "_bC"] >= A_Index) || (key && active[aWep "_rfType"] == "auto")) {
+				lS := A_TickCount
+				VarClick(cM)
+				cY += active[aWep "_rory"], cX += active[aWep "_rorx"]
+				sleep, % pS
+				if (abs(cY) >= 1 || abs(cX) >= 1) {
+					DllCall("mouse_event", "UInt", 0x01, "UInt", cX, "UInt", cY)
+					cY -= floor(cY), cX -= floor(cX)
+				}
+				lE := A_TickCount
+			}
+		}
+	}
+	else {
+		key := 1
+		VarClick(cM,"d")
+	}
+	return
+	
+	ShootUp:
+	if (key)
+		VarClick(cM,"u")
+	key := 0
+	
+	return
+	
+	Swap1:
+	aWep := 1
+	return
+	Swap2:
+	aWep := 2
+	return
+	Swap3:
+	aWep := 3
+	return
+	
+	Insert::
+	cVals:=!cVals
+	if (cVals) {
+		PopulateGui2(aWep)
+		Gui 2: Show
+		ControlFocus,Edit1,Customize
+	}
+	else {
+		Gui 2: Submit,nohide
+		tempW := "wep" aWep
+		SaveGui2(aWep,GetWeaponNum(cG,%tempW%,wC),cG)
+		Gui 2: Hide
+		
+	}
+	WinActivate, % "ahk_class " aC
+	return
+#if
+
+#if (WinActive("ahk_class " aC) && cVals)
+	Home::
+	ControlGetFocus,res,Customize
+	if (!instr(res,"Edit"))
+		res := "Edit"
+	res := lTrim(res,"Edit")
+	res := "Edit" ((res == "") ? 6 : (res == 1) ? 6 : res-1)
+	iVal := GetIncVal(lTrim(res,"Edit"))
+	ControlFocus,%res%,Customize
+	return
+	
+	End::
+	ControlGetFocus,res,Customize
+	if (!instr(res,"Edit"))
+		res := "Edit"
+	res := lTrim(res,"Edit")
+	res := "Edit" ((res == "") ? 1 : (res == 6) ? 1 : res+1)
+	iVal := GetIncVal(lTrim(res,"Edit"))
+	ControlFocus,%res%,Customize
+	return
+	
+	PGup::
+	Gui 2: Submit,nohide
+	controlN := "es" (lTrim(res,"Edit"))
+	%controlN% := (iVal == "rft") ? ((%controlN% == "off" || %controlN% == "") ? "auto" : (%controlN% == "auto") ? "burst" : "off") : %controlN%+iVal
+	SetValtoArr(%controlN%,(lTrim(res,"Edit")),aWep)
+	GuiControl 2:, %controlN% , % %controlN%
+	return
+	
+	PGdn::
+	Gui 2: Submit,nohide
+	controlN := "es" (lTrim(res,"Edit"))
+	%controlN% := (iVal == "rft") ? ((%controlN% == "off" || %controlN% == "") ? "auto" : (%controlN% == "auto") ? "burst" : "off") : %controlN%-iVal
+	SetValtoArr(%controlN%,(lTrim(res,"Edit")),aWep)
+	GuiControl 2:, %controlN% , % %controlN%
+	return
+#if
+
+
+WepCount(game) {
+	while (res != "ERROR") {
+		iniread,res, % "Data\" game ".ini", % "wep" A_Index,name
+		ret := A_Index
+	}
+	return % ret-1
+}
+VarClick(cM,s="") {
+	if (cM == "click" && (s == "" || s == "d")) {
+		Click
+	}
+	if (cM == "dll" && (s == "" || s == "d"))
+		DllCall("mouse_event", "UInt", 0x02)
+	if (cM == "dll" && (s == "" || s == "u"))
+		DllCall("mouse_event", "UInt", 0x04)
+	
+}
+SetValtoArr(v,e,a) {
+	e:= % (e == "1") ? "_ammo"
+	    : (e == "2") ? "_rof"
+	    : (e == "3") ? "_rory"
+	    : (e == "4") ? "_rorx"
+	    : (e == "5") ? "_rfType"
+	    : (e == "6") ? "_bC" : ""
+		
+	active[a e] := v
+}
+GetIncVal(e) {
+	return % (e == "1") ? 1
+	       : (e == "2") ? 5
+	       : (e == "3") ? 0.05
+	       : (e == "4") ? 0.05
+	       : (e == "5") ? "rft"
+	       : (e == "6") ? 1 : ""
+}
+GetGameList() {
+	Loop, %A_ScriptDir%\Data\*.ini
+	{
+		ret .= rTrim(A_LoopFileName,"." A_LoopFileExt) "|"
+	}
+	return % rTrim(ret,"|")
+}
+GetGameCust(game) {
+	iniread,fireKey, % "Data\" game ".ini",GameInfo,fireKey
+	iniread,wepKey1, % "Data\" game ".ini",GameInfo,wepKey1
+	iniread,wepKey2, % "Data\" game ".ini",GameInfo,wepKey2
+	iniread,wepKey3, % "Data\" game ".ini",GameInfo,wepKey3
+	Hotkey,%fireKey%,Shoot
+	Hotkey,%wepKey1%,Swap1
+	Hotkey,%wepKey2%,Swap2
+	Hotkey,%wepKey3%,Swap3
+}
+GetWeaponList(game,wC) {
+	loop % wC {
+		iniread,name, % "Data\" game ".ini", % "wep" A_Index,name
+		ret .= name "|"
+	}
+	return % "|empty||" rTrim(ret,"|")
+}
+GetWeaponNum(game,w,wC) {
+	if (w != "empty" || w != "") {
+		loop % wC {
+			iniread,name, % "Data\" game ".ini", % "wep" A_Index,name
+			if (name == w)
+				return % A_Index
+		}
+	}
+	else
+		return 0
+}
+GetWeaponInfo(game,n,wC,k) {
+	l := "name,ammo,rof,rory,rorx,rfType,bC"
+	iniread,name, % "Data\" game ".ini", % "wep" n,name
+	iniread,ammo, % "Data\" game ".ini", % "wep" n,ammo
+	iniread,rof, % "Data\" game ".ini", % "wep" n,rof
+	iniread,rory, % "Data\" game ".ini", % "wep" n,rory
+	iniread,rorx, % "Data\" game ".ini", % "wep" n,rorx
+	iniread,rfType, % "Data\" game ".ini", % "wep" n,rfType
+	iniread,bC, % "Data\" game ".ini", % "wep" n,bC
+	stringsplit,l,l,`,
+	loop % l0 {
+		c := l%A_Index%
+		active[k "_" l%A_Index%] := (n > 0) ? %c% : ""
+	}
+}
+PopulateGui2(a) {
+	GuiControl 2:,es1, % active[a "_ammo"]
+	GuiControl 2:,es2, % active[a "_rof"]
+	GuiControl 2:,es3, % active[a "_rory"]
+	GuiControl 2:,es4, % active[a "_rorx"]
+	GuiControl 2:,es5, % active[a "_rfType"]
+	GuiControl 2:,es6, % active[a "_bC"]
+}
+SaveGui2(a,n,game){
+	iniwrite, % active[a "_ammo"], % "Data\" game ".ini", % "wep" n,ammo
+	iniwrite, % active[a "_rof"], % "Data\" game ".ini", % "wep" n,rof
+	iniwrite, % active[a "_rory"], % "Data\" game ".ini", % "wep" n,rory
+	iniwrite, % active[a "_rorx"], % "Data\" game ".ini", % "wep" n,rorx
+	iniwrite, % active[a "_rfType"], % "Data\" game ".ini", % "wep" n,rfType
+	iniwrite, % active[a "_bC"], % "Data\" game ".ini", % "wep" n,bC
+}
+FirstRun() {
+	if (!FileExist(A_ScriptDir "\Data\Heroes and Generals.ini")) {
+		ap =
+		(lTrim `t
+		[GameInfo]
+		ahkClass=HnGWindow000
+		clickMode=click
+		toggleKey=RCtrl
+		fireKey=*$LButton
+		wepKey1=1
+		wepKey2=2
+		wepKey3=3
+
+		[wep1]
+		name=C96 Mauser
+		ammo=10
+		rof=0
+		rory=0.0
+		rorx=0.0
+		rfType=auto
+		bC=0
+
+		[wep2]
+		name=Degtyarev DP 28
+		ammo=47
+		rof=400
+		rory=0.0
+		rorx=0.0
+		rfType=auto
+		bC=0
+
+		[wep3]
+		name=Fallschirmjägergewehr 42
+		ammo=20
+		rof=600
+		rory=0.0
+		rorx=0.0
+		rfType=burst
+		bC=10
+
+		[wep4]
+		name=Gewehr 43
+		ammo=10
+		rof=370
+		rory=9.200000
+		rorx=0.000000
+		rfType=auto
+		bC=0
+
+		[wep5]
+		name=M1 Carbine
+		ammo=30
+		rof=550
+		rory=1.8
+		rorx=0.0
+		rfType=auto
+		bC=0
+
+		[wep6]
+		name=M1 Garand
+		ammo=8
+		rof=28
+		rory=0.0
+		rorx=0.0
+		rfType=auto
+		bC=0
+
+		[wep7]
+		name=M1911A1
+		ammo=7
+		rof=0
+		rory=0.0
+		rorx=0.0
+		rfType=auto
+		bC=0
+
+		[wep8]
+		name=M1918 Browning 'BAR'
+		ammo=20
+		rof=500
+		rory=0.0
+		rorx=0.0
+		rfType=auto
+		bC=0
+
+		[wep9]
+		name=M1919 Browning
+		ammo=50
+		rof=40
+		rory=2.5
+		rorx=0.0
+		rfType=auto
+		bC=0
+
+		[wep10]
+		name=M3 Grease Gun
+		ammo=30
+		rof=400
+		rory=0.8
+		rorx=0.0
+		rfType=auto
+		bC=0
+
+		[wep11]
+		name=Maschinengewehr 34
+		ammo=50
+		rof=0
+		rory=0.0
+		rorx=0.0
+		rfType=auto
+		bC=0
+
+		[wep12]
+		name=Maschinengewehr 42
+		ammo=50
+		rof=1100
+		rory=13.450000
+		rorx=0.050000
+		rfType=burst
+		bC=3
+
+		[wep13]
+		name=Maschinenpistole 34
+		ammo=20
+		rof=450
+		rory=0.0
+		rorx=0.0
+		rfType=auto
+		bC=0
+
+		[wep14]
+		name=Maschinenpistole 40
+		ammo=32
+		rof=560
+		rory=3.150000
+		rorx=0.0
+		rfType=burst
+		bC=5
+
+		[wep15]
+		name=PPSh-41
+		ammo=71
+		rof=600
+		rory=0.0
+		rorx=0.0
+		rfType=auto
+		bC=0
+
+		[wep16]
+		name=Thompson M1A1
+		ammo=30
+		rof=700
+		rory=3.200000
+		rorx=0.750000
+		rfType=burst
+		bC=5
+		)
+		FileCreateDir, % A_ScriptDir "\Data"
+		fileAppend,%ap%, % A_ScriptDir "\Data\Heroes and Generals.ini"
+	}
+}
+
+;~rshift::
+GuiEscape:
+GuiClose:
+Exitapp
