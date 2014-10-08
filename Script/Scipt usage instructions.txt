@@ -1,0 +1,19 @@
+[Will be updated at a later time]
+
+Run your game
+Run the script
+Select your game from dropdownlist
+Select your weapons
+Select whether to to use rapid fire (small failure of the script is that automatic weapons need rf for auto fire)
+Click Start and the game window get's activated
+To turn on the grrfm management, press the toggle key and again to turn off while in menu etc
+Fire some bullets and revel in glory
+
+But since things don't 
+Appear from thin air
+Click Insert which pops up a weapon info customization window
+Press Home and End keys for going up and down
+PageUp and PageDown for increasing and decreasing the values
+The changes will be instantly visible when you fire making the tuning fast and comfy
+When you press Insert again to cancel/hide the gui, it saves the info to the .ini file
+Fire some more bullets and this time for realz, revel in glory!
