@@ -92,7 +92,7 @@ return
 		else {
 			while ((key && active[aWep "_rfType"] == "burst" && active[aWep "_bC"] >= A_Index) || (key && active[aWep "_rfType"] == "auto")) {
 				lS := A_TickCount
-				VarClick(cM)
+				;~ VarClick(cM)
 				cY += active[aWep "_rory"], cX += active[aWep "_rorx"]
 				sleep, % pS
 				if (abs(cY) >= 1 || abs(cX) >= 1) {
