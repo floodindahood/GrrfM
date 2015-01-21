@@ -38,18 +38,18 @@ Start:
 iniread,cType, % "Data\" cG ".ini",GameInfo,cType
 iniread,toggleKey, % "Data\" cG ".ini",GameInfo,toggleKey
 iniread,fireKey, % "Data\" cG ".ini",GameInfo,fireKey
-iniread,wepKey1, % "Data\" cG ".ini",GameInfo, % "~" wepKey1
-iniread,wepKey2, % "Data\" cG ".ini",GameInfo, % "~" wepKey2
-iniread,wepKey3, % "Data\" cG ".ini",GameInfo, % "~" wepKey3
+iniread,wepKey1, % "Data\" cG ".ini",GameInfo, wepKey1
+iniread,wepKey2, % "Data\" cG ".ini",GameInfo, wepKey2
+iniread,wepKey3, % "Data\" cG ".ini",GameInfo, wepKey3
 Hotkey,%toggleKey%,toggleScript
 Hotkey,%fireKey%,Shoot
 Hotkey, % fireKey " Up",ShootUp
-Hotkey,%wepKey1%,Swap1
-Hotkey,%wepKey2%,Swap2
-Hotkey,%wepKey3%,Swap3
+Hotkey,% "~" wepKey1,Swap1
+Hotkey,% "~" wepKey2,Swap2
+Hotkey,% "~" wepKey3,Swap3
 WinActivate,% "ahk_class " aC
 aWep := 1
-return
+return 
 
 Game:
 gui,submit,nohide
